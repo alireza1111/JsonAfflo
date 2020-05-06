@@ -18,7 +18,9 @@ namespace JsonAfflo
         {
             using StreamReader r = new StreamReader(@"C:\Users\xdaval\Documents\ALLFO\generalTerms.json");
             string json = r.ReadToEnd();
-            List<Context> items = JsonConvert.DeserializeObject<List<Context>>(json);
+            TopLevel items = JsonConvert.DeserializeObject<TopLevel>(json);
+            for (int i = 0; i < items.Graph.Count; i++)
+                Console.WriteLine(string.Format("{0} {1} {2} {3} {4} {5}", items.Graph[i].Uri.Segments[3], System.Guid.NewGuid(), items.Graph[i].PrefLabel[0].Value, items.Graph[i].PrefLabel[2].Value, items.Graph[i].Uri, "ALLFO"));
         }
     }
 
