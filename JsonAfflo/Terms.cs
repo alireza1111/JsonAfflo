@@ -15,7 +15,7 @@ namespace JsonAfflo
     using System.Globalization;
 
 
-    public partial class TopLevel
+    public partial class Terms
     {
         [JsonProperty("@context", NullValueHandling = NullValueHandling.Ignore)]
         public Context Context { get; set; }
@@ -113,8 +113,8 @@ namespace JsonAfflo
 /*        [JsonProperty("http://www.yso.fi/onto/yso-meta/2007-03-02/deprecatedHasThematicGroup", NullValueHandling = NullValueHandling.Ignore)]
         public HttpWwwYsoFiOntoYsoMeta20070302_DeprecatedHasThematicGroup HttpWwwYsoFiOntoYsoMeta20070302DeprecatedHasThematicGroup { get; set; }*/
 
-/*        [JsonProperty("skos:member", NullValueHandling = NullValueHandling.Ignore)]
-        public List<HttpWwwYsoFiOntoYsoMeta20070302_DeprecatedHasThematicGroup> SkosMember { get; set; }*/
+        [JsonProperty("skos:member", NullValueHandling = NullValueHandling.Ignore)]
+        public List<HttpWwwYsoFiOntoYsoMeta20070302_DeprecatedHasThematicGroup> SkosMember { get; set; }
     }
 
     public partial class HttpWwwYsoFiOntoYsoMeta20070302_DeprecatedHasThematicGroup
@@ -136,13 +136,13 @@ namespace JsonAfflo
 
     public enum TypeEnum { IsothesConceptGroup, SkosCollection, SkosConcept };
 
-    public partial struct TypeElement
+    public partial struct TypeElementUP
     {
         public TypeEnum? Enum;
         public Uri PurpleUri;
 
-        public static implicit operator TypeElement(TypeEnum Enum) => new TypeElement { Enum = Enum };
-        public static implicit operator TypeElement(Uri PurpleUri) => new TypeElement { PurpleUri = PurpleUri };
+        public static implicit operator TypeElementUP(TypeEnum Enum) => new TypeElementUP { Enum = Enum };
+        public static implicit operator TypeElementUP(Uri PurpleUri) => new TypeElementUP { PurpleUri = PurpleUri };
     }
 
     public partial class TopLevel
@@ -219,7 +219,7 @@ namespace JsonAfflo
 
     internal class TypeElementConverter : JsonConverter
     {
-        public override bool CanConvert(Type t) => t == typeof(TypeElement) || t == typeof(TypeElement?);
+        public override bool CanConvert(Type t) => t == typeof(TypeElementUP) || t == typeof(TypeElementUP?);
 
         public override object ReadJson(JsonReader reader, Type t, object existingValue, JsonSerializer serializer)
         {
@@ -231,16 +231,16 @@ namespace JsonAfflo
                     switch (stringValue)
                     {
                         case "isothes:ConceptGroup":
-                            return new TypeElement { Enum = TypeEnum.IsothesConceptGroup };
+                            return new TypeElementUP { Enum = TypeEnum.IsothesConceptGroup };
                         case "skos:Collection":
-                            return new TypeElement { Enum = TypeEnum.SkosCollection };
+                            return new TypeElementUP { Enum = TypeEnum.SkosCollection };
                         case "skos:Concept":
-                            return new TypeElement { Enum = TypeEnum.SkosConcept };
+                            return new TypeElementUP { Enum = TypeEnum.SkosConcept };
                     }
                     try
                     {
                         var uri = new Uri(stringValue);
-                        return new TypeElement { PurpleUri = uri };
+                        return new TypeElementUP { PurpleUri = uri };
                     }
                     catch (UriFormatException) { }
                     break;
@@ -250,7 +250,7 @@ namespace JsonAfflo
 
         public override void WriteJson(JsonWriter writer, object untypedValue, JsonSerializer serializer)
         {
-            var value = (TypeElement)untypedValue;
+            var value = (TypeElementUP)untypedValue;
             if (value.Enum != null)
             {
                 switch (value.Enum)

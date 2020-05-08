@@ -13,19 +13,44 @@ namespace JsonAfflo
     {
         public static void Main(string[] args)
         {
-            LoadJson();
-          //  Console.WriteLine(items..)
+          //  LoadJson();
+            LoadUpTerms();
         }
 
-        public static void LoadJson()
+        private static void LoadUpTerms()
         {
-            /*            using StreamReader r = new StreamReader(@"C:\Users\xdaval\Documents\ALLFO\generalTerms.json");
-                        string json = r.ReadToEnd();
-                        TopLevel items = JsonConvert.DeserializeObject<TopLevel>(json);*/
+            var ut = new UpTerms();
+            var items = LoadJsonUp();
+            for(int i=0; i<=items.Types.Count; i++)
+            {
+                Console.WriteLine(ut.Types[i].Enum.Value);
+            }
 
+        }
 
+        public static UpTerms LoadJsonUp()
+        {
             JsonSerializer serializer = new JsonSerializer();
-            TopLevel items = new TopLevel();
+            UpTerms items = new UpTerms();
+            using (FileStream s = File.Open(@"C:\Users\xdaval\Documents\ALLFO\upp.json", FileMode.Open))
+            using (StreamReader sr = new StreamReader(s))
+            using (JsonReader reader = new JsonTextReader(sr))
+            {
+                while (reader.Read())
+                {
+                    // deserialize only when there's "{" character in the stream
+                    if (reader.TokenType == JsonToken.StartObject)
+                    {
+                        items = serializer.Deserialize<UpTerms>(reader);
+                    }
+                }
+            }
+            return items;
+        }
+            public static void LoadJson()
+        {
+            JsonSerializer serializer = new JsonSerializer();
+            Terms items = new Terms();
             using (FileStream s = File.Open(@"C:\Users\xdaval\Documents\ALLFO\generalTerms.json", FileMode.Open))
             using (StreamReader sr = new StreamReader(s))
             using (JsonReader reader = new JsonTextReader(sr))
@@ -35,14 +60,15 @@ namespace JsonAfflo
                     // deserialize only when there's "{" character in the stream
                     if (reader.TokenType == JsonToken.StartObject)
                     {
-                        items = serializer.Deserialize<TopLevel>(reader);
+                        items = serializer.Deserialize<Terms>(reader);
                     }
                 }
             }
 
             for (int i = 0 ; i < items.Graph.Count; i++)
+            {
                 if (items.Graph[i].PrefLabel != null)
-                Console.WriteLine(string.Format("INSERT INTO KEYWORD (external_id, uuid, slug, text_en, text_sv, uri, vocabulary) values('{0}','{1}','{2}','{3}','{4}','{5}','{6}');", 
+                    Console.WriteLine(string.Format("INSERT INTO KEYWORD (external_id, uuid, slug, text_en, text_sv, uri, vocabulary) values('{0}','{1}','{2}','{3}','{4}','{5}','{6}') ON CONFLICT (slug,vocabulary) DO UPDATE SET slug = keyword.slug || 0;", 
                                                                            GetObject(items, i).ExternalId,
                                                                            GetObject(items, i).Uuid,
                                                                            GetObject(items, i).Slug,
@@ -50,9 +76,15 @@ namespace JsonAfflo
                                                                            GetObject(items, i).TextSv,
                                                                            GetObject(items, i).Uri,
                                                                            GetObject(items, i).Vocabulary));
+/*                if (items.Graph[i].SkosMember != null)
+                    Console.WriteLine(string.Format("INSERT INTO KEYWORD_STRUCTURE (parent_keyword, child_keyword) values({0},{1});", GetParentId(items, i)))*/
+
+            }
+
         }
 
-        private static WellDefinedClass GetObject(TopLevel items, int i)
+
+        private static WellDefinedClass GetObject(Terms items, int i)
         {
             return new WellDefinedClass
             {
